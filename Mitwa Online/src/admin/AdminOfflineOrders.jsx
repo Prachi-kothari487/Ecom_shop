@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../utils/api";
 import { useNavigate } from "react-router-dom";
 
 export default function AdminOfflineOrders() {
@@ -7,10 +7,9 @@ export default function AdminOfflineOrders() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = JSON.parse(localStorage.getItem("user"))?.token;
-    axios.get("http://localhost:5000/api/offline-bills", {
-      headers: { Authorization: `Bearer ${token}` }
-    }).then((res) => setBills(res.data));
+    API.get("/api/offline-bills")
+      .then((res) => setBills(res.data))
+      .catch((err) => console.error(err));
   }, []);
 
   const sendWhatsApp = (bill) => {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
+import API from "../utils/api";
 
 export default function EditOfflineBill() {
   const { id } = useParams();
@@ -8,7 +8,7 @@ export default function EditOfflineBill() {
   const [bill, setBill] = useState(null);
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/offline-bills/${id}`).then((res) => setBill(res.data));
+    API.get(`/api/offline-bills/${id}`).then((res) => setBill(res.data));
   }, [id]);
 
   const updateQty = (index, change) => {
@@ -29,7 +29,7 @@ export default function EditOfflineBill() {
   };
 
   const saveChanges = async () => {
-    await axios.put(`http://localhost:5000/api/offline-bills/${id}`, bill);
+    await API.put(`/api/offline-bills/${id}`, bill);
     alert("Bill Updated ✅");
     navigate("/admin/offline");
   };
