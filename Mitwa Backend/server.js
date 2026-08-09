@@ -40,6 +40,11 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+// Root Route for Render Health Check
+app.get("/", (req, res) => {
+  res.send("Mitwa Backend is running successfully! 🚀");
+});
+
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
