@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import API from "../utils/api";
+import AdminLayout from "./AdminLayout";
 import Cropper from "react-easy-crop";
 import getCroppedImg from "../utils/cropImage";
+import toast from "react-hot-toast";
 
 export default function AddProduct() {
   const [form, setForm] = useState({
@@ -25,7 +27,7 @@ export default function AddProduct() {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/categories").then((res) => setCategories(res.data));
+    API.get("/api/categories").then((res) => setCategories(res.data));
   }, []);
 
   const handleImage = (e) => {
@@ -39,23 +41,42 @@ export default function AddProduct() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const croppedBlob = await getCroppedImg(preview, croppedAreaPixels);
-    const data = new FormData();
-    data.append("image", croppedBlob, "product.jpg");
-    Object.keys(form).forEach((key) => data.append(key, form[key]));
-    await axios.post("http://localhost:5000/api/products", data);
-    alert("Product Added 🎉");
+    try {
+      const data = new FormData();
+
+      // Use cropped image if available, else original
+      if (preview && croppedAreaPixels) {
+        const croppedBlob = await getCroppedImg(preview, croppedAreaPixels);
+        data.append("image", croppedBlob, "product.jpg");
+      } else if (preview) {
+        // No crop done — use original file
+        const response = await fetch(preview);
+        const blob = await response.blob();
+        data.append("image", blob, "product.jpg");
+      }
+
+      Object.keys(form).forEach((key) => {
+        if (form[key] !== "") data.append(key, form[key]);
+      });
+
+      await API.post("/api/products", data);
+      toast.success("Product Added 🎉");
+    } catch (err) {
+      toast.error("Failed: " + (err.response?.data?.msg || err.message));
+    }
   };
 
   const addCategory = async () => {
     if (!newCategory.trim()) return;
-    const res = await axios.post("http://localhost:5000/api/categories", { name: newCategory });
+    const res = await API.post("/api/categories", { name: newCategory });
     setCategories([...categories, res.data]);
     setNewCategory("");
+    toast.success("Category added!");
   };
 
   return (
-    <div className="p-6 max-w-lg mx-auto bg-white rounded-xl shadow mt-6">
+    <AdminLayout>
+    <div className="max-w-lg mx-auto bg-white rounded-2xl shadow-card p-6">
       <h2 className="text-2xl font-bold mb-4">Add Product 👗</h2>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -138,8 +159,9 @@ export default function AddProduct() {
           </div>
         )}
 
-        <button className="bg-primary text-white py-2 rounded-full">Add Product</button>
+        <button className="btn-primary w-full py-3 font-semibold">Add Product 👗</button>
       </form>
     </div>
+    </AdminLayout>
   );
 }

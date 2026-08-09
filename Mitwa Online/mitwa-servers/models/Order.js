@@ -7,12 +7,19 @@ const orderSchema = new mongoose.Schema({
   total: Number,
   status: {
     type: String,
+    enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
     default: "pending"
   },
   type: {
     type: String,
     default: "online"
-  }
+  },
+  address: {
+    street: String,
+    city: String,
+    pincode: String,
+  },
+  coupon: String,
 }, { timestamps: true });
 
 export default mongoose.model("Order", orderSchema);

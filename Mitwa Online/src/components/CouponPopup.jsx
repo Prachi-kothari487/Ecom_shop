@@ -7,6 +7,11 @@ export default function CouponPopup() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
+    // Don't show popup to admin/staff
+    const user = JSON.parse(localStorage.getItem("user"));
+    const isAdmin = user?.role === "admin" || user?.role === "staff";
+    if (isAdmin) return;
+
     const timer = setTimeout(() => setShow(true), 3000);
     return () => clearTimeout(timer);
   }, []);

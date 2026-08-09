@@ -5,86 +5,73 @@ import { useParams, useNavigate } from "react-router-dom";
 export default function EditOfflineBill() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [order, setOrder] = useState(null);
+  const [bill, setBill] = useState(null);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/orders/offline").then((res) => {
-      const found = res.data.find((o) => o._id === id);
-      // ensure each item has qty
-      if (found) {
-        found.items = found.items.map((item) => ({ ...item, qty: item.qty || 1 }));
-        found.total = found.items.reduce((sum, item) => sum + item.price * item.qty, 0);
-      }
-      setOrder(found);
-    });
+    axios.get(`http://localhost:5000/api/offline-bills/${id}`).then((res) => setBill(res.data));
   }, [id]);
 
   const updateQty = (index, change) => {
-    const updated = { ...order, items: [...order.items] };
-    updated.items[index] = { ...updated.items[index], qty: updated.items[index].qty + change };
-
-    if (updated.items[index].qty <= 0) {
+    const updated = { ...bill, items: [...bill.items] };
+    const newQty = updated.items[index].qty + change;
+    if (newQty <= 0) {
       updated.items.splice(index, 1);
+    } else {
+      updated.items[index] = {
+        ...updated.items[index],
+        qty: newQty,
+        total: updated.items[index].price * newQty
+      };
     }
-
-    updated.total = updated.items.reduce((sum, item) => sum + item.price * item.qty, 0);
-    setOrder(updated);
-  };
-
-  const sendWhatsApp = () => {
-    const phone = order.phone ? `91${order.phone}` : "919261151400";
-    let message = `🧾 *MITWA COLLECTION*\n\n`;
-    message += `Customer: ${order.userId}\n\n`;
-    order.items.forEach((item, i) => {
-      message += `${i + 1}. ${item.name} x${item.qty || 1} - ₹${item.price * (item.qty || 1)}\n`;
-    });
-    message += `\nTotal: ₹${order.total}`;
-    message += `\n\nThank you 💖`;
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank");
+    updated.subtotal = updated.items.reduce((s, i) => s + i.total, 0);
+    updated.total = updated.subtotal;
+    setBill(updated);
   };
 
   const saveChanges = async () => {
-    await axios.put(`http://localhost:5000/api/orders/${id}`, order);
+    await axios.put(`http://localhost:5000/api/offline-bills/${id}`, bill);
     alert("Bill Updated ✅");
     navigate("/admin/offline");
   };
 
-  if (!order) return <p className="p-6">Loading...</p>;
+  const sendWhatsApp = () => {
+    if (!bill.phone) { alert("No phone number ❌"); return; }
+    let text = `🧾 *MITWA COLLECTION*\n\nBill No: ${bill.billNumber}\nCustomer: ${bill.customerName}\n\n`;
+    bill.items.forEach((i) => { text += `${i.name} x${i.qty} = ₹${i.total}\n`; });
+    text += `\nTotal: ₹${bill.total}\n\nThank you ❤️`;
+    window.open(`https://wa.me/91${bill.phone}?text=${encodeURIComponent(text)}`, "_blank");
+  };
+
+  if (!bill) return <p className="p-6">Loading...</p>;
 
   return (
     <div className="p-6 max-w-lg mx-auto bg-white rounded-xl shadow mt-6">
-      <h2 className="text-2xl font-bold mb-2">Edit Bill 🧾</h2>
-      <p className="text-gray-500 mb-4">Customer: {order.userId}</p>
+      <h2 className="text-2xl font-bold mb-1">Edit Bill 🧾</h2>
+      <p className="text-gray-500 mb-1">{bill.billNumber}</p>
+      <p className="text-gray-500 mb-4">Customer: {bill.customerName} | 📱 {bill.phone}</p>
 
-      {order.items.length === 0 && <p className="text-gray-400">No items</p>}
-
-      {order.items.map((item, i) => (
+      {bill.items.map((item, i) => (
         <div key={i} className="flex justify-between items-center border-b py-2">
-          <span className="flex-1">{item.name}</span>
+          <span className="flex-1 text-sm">{item.name}</span>
           <div className="flex items-center gap-2">
             <button onClick={() => updateQty(i, -1)} className="bg-gray-200 px-2 rounded">➖</button>
             <span className="font-bold w-6 text-center">{item.qty}</span>
             <button onClick={() => updateQty(i, 1)} className="bg-gray-200 px-2 rounded">➕</button>
           </div>
-          <span className="ml-4 font-semibold">₹{item.price * item.qty}</span>
+          <span className="ml-4 font-semibold text-sm">₹{item.total}</span>
         </div>
       ))}
 
-      <h3 className="mt-4 font-bold text-lg">Total: ₹{order.total}</h3>
+      <h3 className="mt-4 font-bold text-lg">Total: ₹{bill.total}</h3>
 
-      <button
-        onClick={saveChanges}
-        className="bg-green-500 text-white px-6 py-2 mt-4 rounded-full w-full"
-      >
-        Save Changes 💾
-      </button>
-
-      <button
-        onClick={sendWhatsApp}
-        className="bg-green-600 text-white px-6 py-2 mt-2 rounded-full w-full"
-      >
-        Send on WhatsApp 📱
-      </button>
+      <div className="flex gap-2 mt-4">
+        <button onClick={saveChanges} className="flex-1 bg-green-500 text-white py-2 rounded-full">
+          Save 💾
+        </button>
+        <button onClick={sendWhatsApp} className="flex-1 bg-green-600 text-white py-2 rounded-full">
+          WhatsApp 📱
+        </button>
+      </div>
     </div>
   );
 }

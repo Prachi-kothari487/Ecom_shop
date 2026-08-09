@@ -1,3 +1,178 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+*:focus, *:focus-visible {
+  outline: none !important;
+}
+
+*, *::before, *::after {
+  caret-color: transparent !important;
+}
+
+input, textarea, [contenteditable="true"] {
+  caret-color: auto !important;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+  background-color: #FFF5FA;
+  color: #1E1B2E;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #FF4D8D;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #D63872;
+}
+
+@layer components {
+  /* Skeleton shimmer */
+  .skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+  }
+
+  /* Glass card */
+  .glass {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .glass-dark {
+    background: rgba(30, 27, 46, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, #FF4D8D 0%, #7C5CFC 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Button base */
+  .btn-primary {
+    background: linear-gradient(135deg, #FF4D8D 0%, #D63872 100%);
+    color: white;
+    padding: 0.6rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 77, 141, 0.4);
+  }
+
+  .btn-secondary {
+    background: linear-gradient(135deg, #7C5CFC 0%, #5B3FD4 100%);
+    color: white;
+    padding: 0.6rem 1.5rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 92, 252, 0.4);
+  }
+
+  /* Input base */
+  .input-field {
+    width: 100%;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    background: white;
+    outline: none !important;
+  }
+  .input-field:focus {
+    border-color: #FF4D8D !important;
+    box-shadow: 0 0 0 3px rgba(255, 77, 141, 0.15) !important;
+  }
+
+  /* Card */
+  .card {
+    background: white;
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 20px rgba(255, 77, 141, 0.08);
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+  .card:hover {
+    box-shadow: 0 8px 40px rgba(255, 77, 141, 0.15);
+    transform: translateY(-2px);
+  }
+
+  /* Badge */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.7rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  /* Status badges */
+  .status-pending { background: #FEF3C7; color: #92400E; }
+  .status-processing { background: #DBEAFE; color: #1E40AF; }
+  .status-shipped { background: #EDE9FE; color: #5B21B6; }
+  .status-delivered { background: #D1FAE5; color: #065F46; }
+  .status-cancelled { background: #FEE2E2; color: #991B1B; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Print styles */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+  .print-only { display: block !important; }
+}

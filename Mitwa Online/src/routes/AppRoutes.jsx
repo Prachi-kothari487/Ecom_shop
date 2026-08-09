@@ -1,6 +1,8 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import Home from "../pages/Home";
 import Products from "../pages/Products";
+import ProductDetail from "../pages/ProductDetail";
 import Cart from "../pages/Cart";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
@@ -20,63 +22,38 @@ import StaffCatalog from "../staff/StaffCatalog";
 import ProtectedRoute from "../components/ProtectedRoute";
 
 export default function AppRoutes() {
+  const { user } = useAuth();
+  const isCustomer = !user || user?.role === "customer";
+
   return (
     <Routes>
+      {/* Public */}
       <Route path="/" element={<Home />} />
       <Route path="/products" element={<Products />} />
-      <Route path="/cart" element={<Cart />} />
+      <Route path="/products/:id" element={<ProductDetail />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+
+      {/* Customer only */}
+      <Route path="/cart" element={isCustomer ? <Cart /> : <Navigate to="/" />} />
       <Route path="/orders" element={<Orders />} />
 
       {/* Admin */}
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute role="admin">
-            <AdminDashboard />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/admin/add"
-        element={
-          <ProtectedRoute role="admin">
-            <AddProduct />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/admin/orders"
-        element={
-          <ProtectedRoute role="admin">
-            <AdminOrders />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/admin/pos"
-        element={
-          <ProtectedRoute role="admin">
-            <POS />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route path="/admin/offline" element={<ProtectedRoute role="admin"><AdminOfflineOrders /></ProtectedRoute>} />
-      <Route path="/admin/offline/:id" element={<ProtectedRoute role="admin"><EditOfflineBill /></ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/admin/add" element={<ProtectedRoute role="admin"><AddProduct /></ProtectedRoute>} />
+      <Route path="/admin/orders" element={<ProtectedRoute role="admin"><AdminOrders /></ProtectedRoute>} />
+      <Route path="/admin/pos" element={<ProtectedRoute allowedRoles={["admin", "staff"]}><POS /></ProtectedRoute>} />
+      <Route path="/admin/offline" element={<ProtectedRoute allowedRoles={["admin", "staff"]}><AdminOfflineOrders /></ProtectedRoute>} />
+      <Route path="/admin/offline/:id" element={<ProtectedRoute allowedRoles={["admin", "staff"]}><EditOfflineBill /></ProtectedRoute>} />
+      <Route path="/admin/staff" element={<ProtectedRoute role="admin"><AddStaff /></ProtectedRoute>} />
+      <Route path="/admin/products" element={<ProtectedRoute allowedRoles={["admin", "staff"]}><AdminProducts /></ProtectedRoute>} />
 
       {/* Staff */}
-      <Route path="/staff" element={<ProtectedRoute role="staff"><StaffDashboard /></ProtectedRoute>} />
-      <Route path="/staff/orders" element={<ProtectedRoute role="staff"><StaffOrders /></ProtectedRoute>} />
-      <Route path="/staff/offline" element={<ProtectedRoute role="staff"><StaffOffline /></ProtectedRoute>} />
-      <Route path="/staff/catalog" element={<ProtectedRoute role="staff"><StaffCatalog /></ProtectedRoute>} />
-
-      <Route path="/admin/staff" element={<ProtectedRoute role="admin"><AddStaff /></ProtectedRoute>} />
-      <Route path="/admin/products" element={<ProtectedRoute role="admin"><AdminProducts /></ProtectedRoute>} />
+      <Route path="/staff" element={<ProtectedRoute allowedRoles={["admin", "staff"]}><StaffDashboard /></ProtectedRoute>} />
+      <Route path="/staff/pos" element={<ProtectedRoute allowedRoles={["admin", "staff"]}><POS /></ProtectedRoute>} />
+      <Route path="/staff/orders" element={<ProtectedRoute allowedRoles={["admin", "staff"]}><StaffOrders /></ProtectedRoute>} />
+      <Route path="/staff/offline" element={<ProtectedRoute allowedRoles={["admin", "staff"]}><StaffOffline /></ProtectedRoute>} />
+      <Route path="/staff/catalog" element={<ProtectedRoute allowedRoles={["admin", "staff"]}><StaffCatalog /></ProtectedRoute>} />
     </Routes>
   );
 }
