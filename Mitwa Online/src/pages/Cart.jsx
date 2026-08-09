@@ -19,6 +19,8 @@ export default function Cart() {
   const [couponError, setCouponError] = useState("");
   const [step, setStep] = useState("cart"); // cart | address | success
   const [orderId, setOrderId] = useState(null);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [requestId, setRequestId] = useState(() => Date.now().toString(36) + Math.random().toString(36).substring(2));
   const [address, setAddress] = useState(() => {
     try { return JSON.parse(localStorage.getItem("mitwa_address")) || { name: "", street: "", city: "", pincode: "", phone: "" }; }
     catch { return { name: "", street: "", city: "", pincode: "", phone: "" }; }
@@ -56,6 +58,7 @@ export default function Cart() {
     if (address.phone.length !== 10) { toast.error("Enter valid 10-digit phone number"); return; }
 
     localStorage.setItem("mitwa_address", JSON.stringify(address));
+    setIsPlacingOrder(true);
 
     try {
       const res = await API.post("/api/orders", {
@@ -66,12 +69,15 @@ export default function Cart() {
         type: "online",
         address: { street: address.street, city: address.city, pincode: address.pincode },
         coupon: appliedCoupon?.code || null,
+        requestId: requestId,
       });
       if (appliedCoupon) localStorage.setItem(appliedCoupon.code, "used");
       setOrderId(res.data._id || "ORD" + Date.now());
       setStep("success");
     } catch (err) {
       toast.error(err.response?.data?.msg || "Order failed ❌");
+    } finally {
+      setIsPlacingOrder(false);
     }
   };
 
@@ -169,8 +175,8 @@ export default function Cart() {
             </div>
           </div>
 
-          <button onClick={handlePlaceOrder} className="btn-primary w-full py-4 text-base mt-4">
-            Place Order 📦
+          <button onClick={handlePlaceOrder} disabled={isPlacingOrder} className={`btn-primary w-full py-4 text-base mt-4 ${isPlacingOrder ? 'opacity-70 cursor-not-allowed' : ''}`}>
+            {isPlacingOrder ? "Placing Order..." : "Place Order 📦"}
           </button>
         </div>
       </div>

@@ -20,6 +20,11 @@ const orderSchema = new mongoose.Schema({
     pincode: String,
   },
   coupon: String,
+  requestId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
 }, { timestamps: true });
 
 export default mongoose.model("Order", orderSchema);

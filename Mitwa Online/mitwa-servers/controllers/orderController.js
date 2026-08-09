@@ -5,7 +5,15 @@ import jwt from "jsonwebtoken";
 // Create Order
 export const createOrder = async (req, res) => {
   try {
-    const { items } = req.body;
+    const { items, requestId } = req.body;
+
+    // Idempotency Check: Prevent duplicate orders from same network request retry
+    if (requestId) {
+      const existingOrder = await Order.findOne({ requestId });
+      if (existingOrder) {
+        return res.json(existingOrder); // Return existing order without reducing stock or creating a new one
+      }
+    }
 
     // Check & reduce stock
     for (let item of items) {
